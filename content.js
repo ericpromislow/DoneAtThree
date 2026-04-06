@@ -40,15 +40,12 @@ try {
     }
 
     async function flashAndClickSequence(tiles) {
-	for (i = 0; i < 4; i++) {
-	    const tiles = getUnselectedTiles();
-	    let tile = tiles[i];
+	for (const tile of tiles) {
 	    if (tile.classList.toString().indexOf("Card-module_selected_") >= 0) {
 		console.log(`QQQ: Tile ${tile.textContent} is already clicked`);
 		tile.classList.add("done-at-three-helper-highlight");
 		await sleep(preClickPause);
 		// Need to refresh each time after an await because of react
-		tile = getUnselectedTiles()[i];
 		tile.classList.remove("done-at-three-helper-highlight");
 		continue;
 	    }
@@ -60,7 +57,6 @@ try {
 
 	    // Optional: small pre-click pause so user sees highlight
 	    await sleep(preClickPause);
-	    tile = getUnselectedTiles()[i];
 
 	    console.log("QQQ: click")
 	    // 2. Click (invoke NYT handler)
@@ -68,7 +64,6 @@ try {
 
 	    // 3. Keep tile highlighted briefly after click
 	    await sleep(highlightedDuration);
-	    tile = getUnselectedTiles()[i];
 
 	    console.log("QQQ: Remove highlight")
 	    // 4. Remove highlight
@@ -78,7 +73,6 @@ try {
 	    await sleep(nextTileWait);
 
 	    // Just in case
-	    tile = getUnselectedTiles()[i];
 	    if (tile.classList.toString().indexOf("Card-module_selected_") == -1) {
 		realClick(tile);
 		await sleep(nextTileWait);
