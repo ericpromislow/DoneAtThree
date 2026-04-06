@@ -40,11 +40,15 @@ try {
     }
 
     async function flashAndClickSequence(tiles) {
-	for (const tile of tiles) {
-	    if (tile.clicked) {
+	for (i = 0; i < 4; i++) {
+	    const tiles = getUnselectedTiles();
+	    let tile = tiles[i];
+	    if (tile.classList.toString().indexOf("Card-module_selected_") >= 0) {
 		console.log(`QQQ: Tile ${tile.textContent} is already clicked`);
 		tile.classList.add("done-at-three-helper-highlight");
 		await sleep(preClickPause);
+		// Need to refresh each time after an await because of react
+		tile = getUnselectedTiles()[i];
 		tile.classList.remove("done-at-three-helper-highlight");
 		continue;
 	    }
@@ -56,6 +60,7 @@ try {
 
 	    // Optional: small pre-click pause so user sees highlight
 	    await sleep(preClickPause);
+	    tile = getUnselectedTiles()[i];
 
 	    console.log("QQQ: click")
 	    // 2. Click (invoke NYT handler)
@@ -63,6 +68,7 @@ try {
 
 	    // 3. Keep tile highlighted briefly after click
 	    await sleep(highlightedDuration);
+	    tile = getUnselectedTiles()[i];
 
 	    console.log("QQQ: Remove highlight")
 	    // 4. Remove highlight
@@ -70,6 +76,14 @@ try {
 
 	    // 5. Wait before next tile
 	    await sleep(nextTileWait);
+
+	    // Just in case
+	    tile = getUnselectedTiles()[i];
+	    if (tile.classList.toString().indexOf("Card-module_selected_") == -1) {
+		realClick(tile);
+		await sleep(nextTileWait);
+	    }
+
 	}
     }
     
@@ -102,7 +116,7 @@ try {
     function maybeClickLastFour() {
 	ensureHighlightStyle();
 	// Ensure the updated dom style is processed
-	setTimeout(maybeClickLastFourPart2, 0);
+	setTimeout(maybeClickLastFourPart2, 100);
     }
     
     async function maybeClickLastFourPart2() {
@@ -137,105 +151,135 @@ try {
 	didTheAutoSubmit = true;
 	realClick(submitButton);
 	console.log("QQQ: + click the submit button");
-	if (solvedCategoriesObserver) {
-	    console.log("QQQ: stop observing");
-	    solvedCategoriesObserver.disconnect();
+    }
+
+    function selectElement(parentElement, selector, matchFunc) {
+	if (matchFunc) {
+	    const items = Array.from(parentElement.querySelectorAll(selector)).filter(elt => matchFunc(elt));
+	    if (items.length > 0) {
+		return items[0];
+	    }
+	    return null;
+	} else {
+	    return parentElement.querySelector(selector);
 	}
     }
 
-    let solvedCategoriesParentObserver = null;
-    let solvedCategoriesObserver = null;
+    function waitForElement(root, selector, matchFunc) {
+	return new Promise((resolve, reject) => {
+	    // Does the desired element exist?
+	    const foundElement = selectElement(root, selector, matchFunc);
+	    if (foundElement) {
+		return resolve(foundElement);
+	    }
 
-    function waitForSolvedCategories(solvedCategoriesContainer) {
-	if (!solvedCategoriesContainer) {
-	    return false;
-	}
-	solvedCategoriesObserver = new MutationObserver((mutations) => {
-	    console.log("QQQ: solvedCategoriesParentObserver: Changed ${mutations.length} nodes");
-	    let found = false;
-	    for (const mutation of mutations) {
-		// Only care about added nodes
-		for (const node of mutation.addedNodes) {
-		    if (!(node instanceof HTMLElement)) continue;
+	    const observer = new MutationObserver((mutations) => {
+		for (const mutation of mutations) {
+		    for (const node of mutation.addedNodes) {
+			if (!(node instanceof HTMLElement)) continue;
+			console.log(`QQQ: waitForElement observer: Looking for selector ${selector}, got node: `, node);
 
-		    // node itself is the h3
-		    if (node.matches?.('h3[data-testid="solved-category-title"]')) {
-			found = true;
-			break;
+			// Direct match on the node
+			if (node.matches?.(selector)) {
+			    console.log(`QQQ: matched selector`);
+			    let acceptNode = true;
+			    if (matchFunc && !matchFunc(node)) {
+				console.log(`QQQ: failed match-func`);
+				acceptNode = false;
+			    }
+			    if (acceptNode) {
+				observer.disconnect();
+				return resolve(node);
+			    }
+			}
+			// Look to see if we're looking for a descendant of the current node
+			const foundElement = selectElement(node, selector, matchFunc);
+			if (foundElement) {
+			    observer.disconnect();
+			    return resolve(foundElement);
+			}
 		    }
 		}
-		if (found) {
-		    setTimeout(maybeClickLastFour, 0);
-		}
-	    }
+	    });
+	    observer.observe(root, {
+		childList: true,
+		subtree: true,
+	    });
 	});
-	solvedCategoriesObserver.observe(solvedCategoriesContainer, {
-	    childList: true,
-	    subtree: true
-	});
-	return true;
     }
 
-    function waitForSolvedCategoriesContainer() {
-	let solvedCategoriesParent = document.querySelector(CATEGORIES_CONTAINER_PARENT_SELECTOR);
-	if (!solvedCategoriesParent) {
-	    solvedCategoriesParent = document;
+    async function waitForEverything() {
+	const gameBoardSelector = 'article[data-testid="connections-board"]';
+	const solvedCategoriesContainerParentSelector = 'article[aria-live="assertive"]';
+	const solvedCategoriesContainerSelector = "ol";
+	const solvedCategoriesContainerFunc = function(node) {
+	    console.error("QQQ: solvedCategoriesContainerFunc: node is ", node);
+	    return node.classList.toString().indexOf("SolvedCategories-module_solvedCategoriesContainer_") >= 0;
 	}
-	solvedCategoriesParentObserver = new MutationObserver((mutations) => {
-	    console.log(`QQQ: solvedCategoriesParentObserver: Changed ${mutations.length} nodes`);
-	    let found = false;
-	    for (const mutation of mutations) {
-		// Only care about added nodes
-		for (const node of mutation.addedNodes) {
-		    if (!(node instanceof HTMLElement)) continue;
-		    console.log(`QQQ: Adding node ${node.tagName}, class ${node.classList.toString()}`);
+	try {
+	    const gameBoard = await waitForElement(document, gameBoardSelector);
+	    console.log("QQQ: Got gameBoard:", gameBoard);
 
-		    // node itself is div.SolvedCategories-module_flipContainer_TAG
-		    if (node.tagName == "DIV" && node.classList.toString().indexOf("SolvedCategories-module_flipContainer") >= 0) {
-			solvedCategoriesParentObserver.disconnect();
-			setTimeout(waitForSolvedCategories, 0, node);
-			found = true;
-			break;
-		    } else if (node.tagName == "DIV") {
-			console.log(`QQQ: Skipping node with class ${node.classList.toString()}`);
-		    }
-		}
-		// Thought: looks like the node exists
-		if (found) break;
-	    }
-	});
-	solvedCategoriesParentObserver.observe(solvedCategoriesParent, {
-	    childList: true,
-	    subtree: true
-	});
-	return true;
+	    const solvedCategoriesContainerParent = await waitForElement(gameBoard, solvedCategoriesContainerParentSelector);
+	    console.log("QQQ: Got solvedCategoriesContainerParent:", solvedCategoriesContainerParent);
+
+	    const solvedCategoriesContainer = await waitForElement(solvedCategoriesContainerParent, solvedCategoriesContainerSelector, solvedCategoriesContainerFunc);
+	    console.log("QQQ: Got solvedCategoriesContainer:", solvedCategoriesContainer);
+	    return solvedCategoriesContainer;
+	} catch(ex) {
+	    console.error("QQQ: Error in waitForEverything:", ex);
+	}
     }
 
-    console.log("QQQ: Done At Three Connections completer loaded");
+    async function getTheCategoriesParent() {
+	const categoriesContainer = await waitForEverything();
+	if (!categoriesContainer) {
+	    console.error("categoriesContainer isn't defined... giving up");
+	    return;
+	}
+	console.log(`QQQ: getTheCategoriesParent: got  categoriesContainer, is`, categoriesContainer);
 
-    const solvedCategoriesContainer = document.querySelector(CATEGORIES_CONTAINER_SELECTOR);
-    if (solvedCategoriesContainer) {
-	const res = waitForSolvedCategories(solvedCategoriesContainer);
-	console.log(`QQQ: waitForSolvedCategories => ${res}`);
-	if (res) {
-	    // And check to see if there are only four items right now
+	let currentGuesses = categoriesContainer.childNodes;
+	switch (currentGuesses.length) {
+	case 4:
+	    // We're done, nothing to do
+	    console.log("QQQ: Got 4 solved rows, nothing left to do");
+	    return;
+	case 3:
+	    console.log("QQQ: Got 3 solved rows, try to submit the last");
 	    setTimeout(maybeClickLastFour, 0);
 	    return;
 	}
-    }
-    solvedCategoriesContainerParent = document.querySelector(CATEGORIES_CONTAINER_PARENT_SELECTOR);
-    if (!solvedCategoriesContainerParent) {
+	console.log(`QQQ: Got ${currentGuesses.length} solved rows, wait for more`);
 	
-	// If there's no parent maybe we have a "Play" button. So let's wait...
+	const solvedCategoriesObserver = new MutationObserver((mutations) => {
+	    const selector = 'h3[data-testid="solved-category-title"]';
+	    console.log(`QQQ: solvedCategoriesContainerObserver: Changed ${mutations.length} nodes`);
+	    for (const mutation of mutations) {
+		for (const node of mutation.addedNodes) {
+		    if (!(node instanceof HTMLElement)) continue;
+		    console.log(`QQQ: solvedCategoriesObserver: Looking for selector ${selector}, got node: `, node);
 
-	const res = waitForSolvedCategoriesContainer();
-	if (!res) {
-	    console.log("ERROR: ConnectionsCompleter can't find expected node where completed answers go");
-	    return;
-	}
-    } else {
-	setTimeout(maybeClickLastFour, 0);
+		    if (node.matches?.(selector) || selectElement(node, selector, null)) {
+			console.log(`QQQ: solvedCategoriesObserver: Matched the selector`);
+			console.log(`QQQ: #children ${categoriesContainer.childNodes.length}`);
+			if (categoriesContainer.childNodes.length === 3) {
+			    solvedCategoriesObserver.disconnect();
+			    setTimeout(maybeClickLastFour, 0);
+			    return;
+			}
+		    }
+		}
+	    }
+	});
+	solvedCategoriesObserver.observe(categoriesContainer, {
+	    childList: true,
+	    subtree: true
+	});
+	return true;
     }
+
+    setTimeout(getTheCategoriesParent, 0);
 
     console.log("QQQ: Done At Three Connections completer loaded");
 })();
