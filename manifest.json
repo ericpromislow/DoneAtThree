@@ -3,10 +3,11 @@
   "manifest_version": 3,
   "name": "Done At Three",
   "short_name": "Done At Three",
-  "version": "0.1.4",
-  "description": "Automatically clicks the last four words in the NYT Connections Games (no affiliation)",
+  "version": "1.0.0",
+  "description": "Third-party extension that automatically clicks the last four words in the New York Times Connections game.",
   "permissions": [],
   "host_permissions": ["https://www.nytimes.com/games/connections*"],
+  "homepage_url": "https://github.com/ericpromislow/connectionsCompleter",
   "content_scripts": [
     {
       "matches": ["https://www.nytimes.com/games/connections*"],
