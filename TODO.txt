@@ -6,3 +6,7 @@
 
 - When hitting row 3, stop the dots-observer
 
+- Shuffle the locations of the last 4
+
+- Name: "3 Rows Down"  -- back up to version 0.4.0 and tag the commit
+

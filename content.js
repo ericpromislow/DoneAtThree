@@ -10,15 +10,28 @@ try {
 	return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    const debug = true;
+    const trace = false;
+    function cl(...args) {
+	if (debug) {
+	    console.log(...args);
+	}
+    }
+    function clt(...args) {
+	if (trace) {
+	    console.log(...args);
+	}
+    }
+
     async function flashAndClickSequence(tiles) {
 	for (let i = 0; i < tiles.length; i++) {
 	    const tile = getUnselectedTiles()[i];
 	    if (tile.classList.toString().indexOf("Card-module_selected_") >= 0) {
-		// console.log(`QQQ: tile ${i} is already selected.`);
+		cl(`QQQ: tile ${i} is already selected.`);
 		continue;
 	    }
 		
-	    // console.log("QQQ: click")
+	    clt("QQQ: click")
 	    // 1. Click (invoke NYT handler)
 	    realClick(tile);
 
@@ -34,15 +47,15 @@ try {
 	// Do it once more!
 	const refreshedTiles = getUnselectedTiles();
 	if (refreshedTiles.some(tile => tile.classList.toString().indexOf("Card-module_selected_") == -1)) {
-	    //console.log(`QQQ... repeating it`);
+	    clt(`QQQ... repeating it`);
 	    for (let i = 0; i < refreshedTiles.length; i++) {
 		const tile = refreshedTiles[i];
 		if (tile.classList.toString().indexOf("Card-module_selected_") >= 0) {
-		    //console.log(`QQQ: tile ${i} is already selected.`);
+		    cl(`QQQ: tile ${i} is already selected.`);
 		    continue;
 		}
 		
-		// console.log("QQQ: click")
+		clt("QQQ: click")
 		// 1. Click (invoke NYT handler)
 		realClick(tile);
 
@@ -86,7 +99,7 @@ try {
 
     async function maybeClickLastFour() {
 	if (alreadyTriggered) {
-	    // console.log("QQQ: already did this...");
+	    clt("QQQ: already did this...");
 	    return;
 	}
 	const submitButton = document.querySelector("button[type='submit']");
@@ -99,10 +112,10 @@ try {
 	    console.error("No unselected tiles");
 	    return;
 	}
-	// console.log(`QQQ: Got ${unselectedTiles.length} tiles left — auto-clicking`);
+	cl(`QQQ: Got ${unselectedTiles.length} tiles left — auto-clicking`);
 
 	if (unselectedTiles.length !== 4) {
-	    // console.log("QQQ: Have " + unselectedTiles.length + " unclicked tiles still.");
+	    clt("QQQ: Have " + unselectedTiles.length + " unclicked tiles still.");
 	    return;
 	}
 	alreadyTriggered = true;
@@ -112,9 +125,9 @@ try {
 	    console.error("SUBMIT button isn't enabled");
 	    return;
 	}
-	// console.log("QQQ: - click the submit button");
+	clt("QQQ: - click the submit button");
 	realClick(submitButton);
-	// console.log("QQQ: + click the submit button");
+	clt("QQQ: + click the submit button");
     }
 
     function selectElement(parentElement, selector, matchFunc) {
@@ -141,14 +154,14 @@ try {
 		for (const mutation of mutations) {
 		    for (const node of mutation.addedNodes) {
 			if (!(node instanceof HTMLElement)) continue;
-			// console.log(`QQQ: waitForElement observer: Looking for selector ${selector}, got node: `, node);
+			cl(`QQQ: waitForElement observer: Looking for selector ${selector}, got node: `, node);
 
 			// Direct match on the node
 			if (node.matches?.(selector)) {
-			    // console.log(`QQQ: matched selector`);
+			    cl(`QQQ: matched selector`);
 			    let acceptNode = true;
 			    if (matchFunc && !matchFunc(node)) {
-				// console.log(`QQQ: failed match-func`);
+				cl(`QQQ: failed match-func`);
 				acceptNode = false;
 			    }
 			    if (acceptNode) {
@@ -177,18 +190,18 @@ try {
 	const solvedCategoriesContainerParentSelector = 'article[aria-live="assertive"]';
 	const solvedCategoriesContainerSelector = "ol";
 	const solvedCategoriesContainerFunc = function(node) {
-	    // console.error("QQQ: solvedCategoriesContainerFunc: node is ", node);
+	    cl("QQQ: solvedCategoriesContainerFunc: node is ", node);
 	    return node.classList.toString().indexOf("SolvedCategories-module_solvedCategoriesContainer_") >= 0;
 	}
 	try {
 	    const gameBoard = await waitForElement(document, gameBoardSelector);
-	    // console.log("QQQ: Got gameBoard:", gameBoard);
+	    cl("QQQ: Got gameBoard:", gameBoard);
 
 	    const solvedCategoriesContainerParent = await waitForElement(gameBoard, solvedCategoriesContainerParentSelector);
-	    // console.log("QQQ: Got solvedCategoriesContainerParent:", solvedCategoriesContainerParent);
+	    cl("QQQ: Got solvedCategoriesContainerParent:", solvedCategoriesContainerParent);
 
 	    const solvedCategoriesContainer = await waitForElement(solvedCategoriesContainerParent, solvedCategoriesContainerSelector, solvedCategoriesContainerFunc);
-	    // console.log("QQQ: Got solvedCategoriesContainer:", solvedCategoriesContainer);
+	    cl("QQQ: Got solvedCategoriesContainer:", solvedCategoriesContainer);
 	    return solvedCategoriesContainer;
 	} catch(ex) {
 	    console.error("Error waiting for the board's container:", ex);
@@ -201,32 +214,32 @@ try {
 	    console.error("categoriesContainer isn't defined... giving up");
 	    return;
 	}
-	// console.log(`QQQ: getTheCategoriesParent: got categoriesContainer, is`, categoriesContainer);
+	cl(`QQQ: getTheCategoriesParent: got categoriesContainer, is`, categoriesContainer);
 
 	let currentGuesses = categoriesContainer.childNodes;
 	switch (currentGuesses.length) {
 	case 4:
 	    // We're done, nothing to do
-	    // console.log("QQQ: Got 4 solved rows, nothing left to do");
+	    cl("QQQ: Got 4 solved rows, nothing left to do");
 	    return;
 	case 3:
-	    // console.log("QQQ: Got 3 solved rows, try to submit the last");
+	    cl("QQQ: Got 3 solved rows, try to submit the last");
 	    setTimeout(maybeClickLastFour, 0);
 	    return;
 	}
-	// console.log(`QQQ: Got ${currentGuesses.length} solved rows, wait for more`);
+	cl(`QQQ: Got ${currentGuesses.length} solved rows, wait for more`);
 	
 	const solvedCategoriesObserver = new MutationObserver((mutations) => {
 	    const selector = 'h3[data-testid="solved-category-title"]';
-	    // console.log(`QQQ: solvedCategoriesContainerObserver: Changed ${mutations.length} nodes`);
+	    cl(`QQQ: solvedCategoriesContainerObserver: Changed ${mutations.length} nodes`);
 	    for (const mutation of mutations) {
 		for (const node of mutation.addedNodes) {
 		    if (!(node instanceof HTMLElement)) continue;
-		    // console.log(`QQQ: solvedCategoriesObserver: Looking for selector ${selector}, got node: `, node);
+		    cl(`QQQ: solvedCategoriesObserver: Looking for selector ${selector}, got node: `, node);
 
 		    if (node.matches?.(selector) || selectElement(node, selector, null)) {
-			// console.log(`QQQ: solvedCategoriesObserver: Matched the selector`);
-			// console.log(`QQQ: #children ${categoriesContainer.childNodes.length}`);
+			cl(`QQQ: solvedCategoriesObserver: Matched the selector`);
+			cl(`QQQ: #children ${categoriesContainer.childNodes.length}`);
 			if (categoriesContainer.childNodes.length === 3) {
 			    solvedCategoriesObserver.disconnect();
 			    setTimeout(maybeClickLastFour, 0);
@@ -245,7 +258,7 @@ try {
 
     setTimeout(getTheCategoriesParent, 0);
 
-    // console.log("QQQ: Done At Three Connections completer loaded");
+    cl("QQQ: Done At Three Connections completer loaded");
 })();
 
 } catch(e) {
