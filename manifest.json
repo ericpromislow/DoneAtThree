@@ -3,10 +3,22 @@
   "manifest_version": 3,
   "name": "3 Rows Down",
   "short_name": "3 Rows Down",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "description": "Third-party extension that automatically clicks the last four words in the New York Times Connections game.",
-  "permissions": [],
-  "host_permissions": ["https://www.nytimes.com/games/connections*"],
+    "permissions": [
+	"<all_urls>"
+  ],
+    "host_permissions": ["https://www.nytimes.com/games/connections",
+			 "https://www.nytimes.com/games/connections/*"
+			],
+  "browser_specific_settings": {
+    "gecko": {
+	"id": "3rowsdown@ericpromislow.com",
+	"data_collection_permissions": {
+	    "required": ["none"]
+	}
+    }
+  },
   "homepage_url": "https://github.com/ericpromislow/connectionsCompleter",
   "content_scripts": [
     {

@@ -242,7 +242,7 @@ try {
 			cl(`QQQ: #children ${categoriesContainer.childNodes.length}`);
 			if (categoriesContainer.childNodes.length === 3) {
 			    solvedCategoriesObserver.disconnect();
-			    setTimeout(maybeClickLastFour, 0);
+			    setTimeout(maybeClickLastFour, 200);
 			    return;
 			}
 		    }
