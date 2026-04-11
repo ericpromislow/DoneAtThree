@@ -10,7 +10,7 @@ try {
 	return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    const debug = true;
+    const debug = false;
     const trace = false;
     function cl(...args) {
 	if (debug) {
