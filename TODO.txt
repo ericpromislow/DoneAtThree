@@ -1,4 +1,6 @@
-- Wrap calls to console.log in cl() { if(debug)...} , maybe console.error
+[ ] - ERBize to work with chrome (and safari?)
+
+[x] - Wrap calls to console.log in cl() { if(debug)...} , maybe console.error
 
 - Watch for end of game at start and do nothing
 
@@ -8,5 +10,5 @@
 
 - Shuffle the locations of the last 4
 
-- Name: "3 Rows Down"  -- back up to version 0.4.0 and tag the commit
+[x] - Name: "3 Rows Down"  -- back up to version 0.4.0 and tag the commit
 

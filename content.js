@@ -194,8 +194,9 @@ try {
 	    return node.classList.toString().indexOf("SolvedCategories-module_solvedCategoriesContainer_") >= 0;
 	}
 	try {
+	    cl("QQQ: -Getting gameBoard:");
 	    const gameBoard = await waitForElement(document, gameBoardSelector);
-	    cl("QQQ: Got gameBoard:", gameBoard);
+	    cl("QQQ: +Got gameBoard:", gameBoard);
 
 	    const solvedCategoriesContainerParent = await waitForElement(gameBoard, solvedCategoriesContainerParentSelector);
 	    cl("QQQ: Got solvedCategoriesContainerParent:", solvedCategoriesContainerParent);
