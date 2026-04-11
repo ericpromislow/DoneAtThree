@@ -4,5 +4,7 @@ set -exu
 
 VERSION=$(jq -r .version manifest.json)
 
-rm -f done-with-three-${VERSION}.zip
-zip -r done-with-three-${VERSION}.zip LICENSE.txt README.txt PRIVACY.md content.js manifest.json
+ZIPFILE=done-with-three-${TARGET}-${VERSION}.zip
+
+rm -f ../$ZIPFILE
+zip -r ../$ZIPFILE LICENSE.txt README.txt PRIVACY.md content.js manifest.json

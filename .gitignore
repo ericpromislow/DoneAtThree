@@ -2,4 +2,5 @@
 #*
 
 *.zip
-manifest.json.erb
+build
+.DS_Store

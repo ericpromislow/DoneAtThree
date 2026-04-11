@@ -1,0 +1,36 @@
+<%# -*- Mode: javascript; indent-tab-mode: nil; js-indent-level: 2 -*- -%>
+<% 
+version = ENV['VERSION'] or die("tabhunter/manifest.json.erb: VERSION not set")
+target = ENV['TARGET'] or die("build.sh.erb: TARGET not set") %>{
+    "author": "Eric Promislow",
+    "manifest_version": 3,
+    "name": "3 Rows Down",
+    "short_name": "3 Rows Down",
+    "version": "<%= version %>",
+    "description": "Third-party extension that automatically clicks the last four words in the New York Times Connections game.",
+    "permissions": [
+<% if target == 'firefox' %>
+    "<all_urls>"
+<% else %>
+    "scripting"
+<% end %>
+    ],
+    "host_permissions": ["https://www.nytimes.com/games/connections",
+			 "https://www.nytimes.com/games/connections/*"
+			],
+<% if target == 'firefox' %>
+    "browser_specific_settings": {
+	"gecko": {
+	    "id": "3rowsdown@ericpromislow.com"
+	}
+    },
+<% end %>
+    "homepage_url": "https://github.com/ericpromislow/connectionsCompleter",
+    "content_scripts": [
+	{
+	    "matches": ["https://www.nytimes.com/games/connections*"],
+	    "js": ["content.js"],
+	    "run_at": "document_end"
+	}
+    ]
+}
