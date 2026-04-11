@@ -23,9 +23,21 @@ try {
 	}
     }
 
+    const shuffleArray = function(a) {
+	for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+	}
+    }
+
     async function flashAndClickSequence(tiles) {
+	const a = new Array(tiles.length);
+	for (let i = 0; i < a.length; i++) {
+	    a[i] = i;
+	}
+	shuffleArray(a);
 	for (let i = 0; i < tiles.length; i++) {
-	    const tile = getUnselectedTiles()[i];
+	    const tile = tiles[a[i]];
 	    if (tile.classList.toString().indexOf("Card-module_selected_") >= 0) {
 		cl(`QQQ: tile ${i} is already selected.`);
 		continue;

@@ -1,4 +1,4 @@
-VERSION=0.4.13
+VERSION=0.4.14
 
 TBDIR=build
 TDIR=$(TBDIR)/threeRowsDown_${TARGET}
@@ -24,7 +24,7 @@ all-chrome:
 
 do-firefox: $(TDIRS) $(ZIPPER)
 
-do-chrome: $(TDIRS) $(ZIPPER) 
+do-chrome: $(TDIRS) # $(ZIPPER) 
 
 $(ZIPPER): $(SOURCES)
 	cd $(TDIR) ; TARGET=$(TARGET) ./build.sh

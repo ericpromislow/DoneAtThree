@@ -1,14 +1,14 @@
-[ ] - ERBize to work with chrome (and safari?)
+[x] - ERBize to work with chrome (and safari?)
 
 [x] - Wrap calls to console.log in cl() { if(debug)...} , maybe console.error
 
-- Watch for end of game at start and do nothing
-
-- Watch for end of game running out of dots and stop the other observer
-
-- When hitting row 3, stop the dots-observer
-
-- Shuffle the locations of the last 4
+[x] - Shuffle the locations of the last 4
 
 [x] - Name: "3 Rows Down"  -- back up to version 0.4.0 and tag the commit
+
+[] - Watch for end of game at start and do nothing
+
+[] - Watch for end of game running out of dots and stop the other observer
+
+[] - When hitting row 3, stop the dots-observer
 
