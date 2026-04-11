@@ -10,9 +10,10 @@ target = ENV['TARGET'] or die("build.sh.erb: TARGET not set") %>{
     "description": "Third-party extension that automatically clicks the last four words in the New York Times Connections game.",
     "permissions": [
 <% if target == 'firefox' %>
-    "<all_urls>"
+	    "activeTab"
 <% else %>
-    "scripting"
+        "activeTab",
+	"scripting"
 <% end %>
     ],
     "host_permissions": ["https://www.nytimes.com/games/connections",
