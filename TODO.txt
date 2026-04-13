@@ -8,7 +8,7 @@
 
 [] - Watch for end of game at start and do nothing
 
-[] - Watch for end of game running out of dots and stop the other observer
+[x] - Check for dots at the end, no need for a separate dots-observer
 
 [] - When hitting row 3, stop the dots-observer
 

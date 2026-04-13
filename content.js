@@ -197,6 +197,11 @@ try {
 	});
     }
 
+    function haveDotsLeft() {
+	const dotsSelector = 'article[data-testid="connections-board"] section span p[data-testid="mistake-text"]'
+	return !! document.querySelector(dotsSelector);
+    }
+
     async function waitForEverything() {
 	const gameBoardSelector = 'article[data-testid="connections-board"]';
 	const solvedCategoriesContainerParentSelector = 'article[aria-live="assertive"]';
@@ -255,7 +260,13 @@ try {
 			cl(`QQQ: #children ${categoriesContainer.childNodes.length}`);
 			if (categoriesContainer.childNodes.length === 3) {
 			    solvedCategoriesObserver.disconnect();
-			    setTimeout(maybeClickLastFour, 200);
+			    if (haveDotsLeft()) {
+				// If there are no dots it means the player made 4 wrong guesses before
+				// getting 3 rows down
+				setTimeout(maybeClickLastFour, 200);
+			    } else {
+				cl(`QQQ: haveDotsLeft() => false`);
+			    }
 			    return;
 			}
 		    }
